@@ -4,7 +4,7 @@ import { shallowEqual } from '../helper/common';
 import { connect } from './hoc';
 import { DispatchProps } from '../dispatch/create';
 import { SummaryColumnContentMap, SummaryValue } from '../store/types';
-import { isRowHeader } from '../helper/column';
+import { isRowHeader } from '../store/helper/column';
 
 interface OwnProps {
   columnName: string;

@@ -7,7 +7,7 @@ import { ColumnResizer } from './columnResizer';
 import { DispatchProps } from '../dispatch/create';
 import { getDataProvider } from '../instance';
 import { DataProvider } from '../dataSource/types';
-import { isParentColumnHeader, isRowHeader, isCheckboxColumn } from '../helper/column';
+import { isParentColumnHeader, isRowHeader, isCheckboxColumn } from '../store/helper/column';
 import { ComplexHeader } from './complexHeader';
 import { HeaderCheckbox } from './headerCheckbox';
 import { SortingButton } from './sortingButton';

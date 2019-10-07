@@ -1,7 +1,7 @@
 import { Store, RowKey } from '../store/types';
 import GridEvent from '../event/gridEvent';
 import { getEventBus } from '../event/eventBus';
-import { isCellEditable, findIndexByRowKey, findRowByRowKey } from '../query/data';
+import { isEditableCell, findIndexByRowKey, findRowByRowKey } from '../query/data';
 import { isFocusedCell, isEditingCell } from '../query/focus';
 import { getRowSpanByRowKey, isRowSpanEnabled } from '../helper/rowSpan';
 import { createRawRow, createViewRow } from '../store/data';
@@ -9,18 +9,18 @@ import { isObservable, notify } from '../helper/observable';
 import { setValue } from './data';
 import { isUndefined } from '../helper/common';
 import { createTreeRawRow } from '../helper/tree';
-import { isHiddenColumn } from '../helper/column';
+import { isHiddenColumn } from '../store/helper/column';
 import { forceSyncRendering } from '../helper/render';
 
 export function startEditing(store: Store, rowKey: RowKey, columnName: string) {
   const { data, focus, column, id } = store;
-  const { rawData } = data;
+  const { filteredRawData } = data;
   const foundIndex = findIndexByRowKey(data, column, id, rowKey);
 
   // makes the data observable to judge editable, disable of the cell;
   makeObservable(store, rowKey);
 
-  if (!isCellEditable(data, column, rowKey, columnName)) {
+  if (!isEditableCell(data, column, foundIndex, columnName)) {
     return;
   }
 
@@ -28,7 +28,7 @@ export function startEditing(store: Store, rowKey: RowKey, columnName: string) {
   const gridEvent = new GridEvent({
     rowKey,
     columnName,
-    value: rawData[foundIndex][columnName]
+    value: filteredRawData[foundIndex][columnName]
   });
 
   /**
@@ -148,7 +148,8 @@ export function saveAndFinishEditing(
   columnName: string,
   value?: string
 ) {
-  const { data, column, focus } = store;
+  const { data, column, focus, id } = store;
+  const foundIndex = findIndexByRowKey(data, column, id, rowKey);
 
   if (!isEditingCell(focus, rowKey, columnName)) {
     return;
@@ -156,7 +157,7 @@ export function saveAndFinishEditing(
   // makes the data observable to judge editable, disable of the cell;
   makeObservable(store, rowKey);
 
-  if (!isCellEditable(data, column, rowKey, columnName)) {
+  if (!isEditableCell(data, column, foundIndex, columnName)) {
     return;
   }
 
@@ -177,6 +178,7 @@ function makeObservable(store: Store, rowKey: RowKey) {
   const { data, column, id } = store;
   const { rawData, viewData } = data;
   const { allColumnMap, treeColumnName, treeIcon } = column;
+  // @TODO: rawData 기준으로 index 찾기
   const foundIndex = findIndexByRowKey(data, column, id, rowKey);
   const rawRow = rawData[foundIndex];
 

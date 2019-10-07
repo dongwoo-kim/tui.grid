@@ -1,56 +1,14 @@
-import { Column, Range, Viewport, Dimension, Data, RowCoords, ColumnCoords } from './types';
+import { Column, Viewport, Dimension, Data, RowCoords, ColumnCoords } from './types';
 import { observable, Observable } from '../helper/observable';
-import { arrayEqual, findIndex } from '../helper/common';
-import { getMaxRowSpanCount, isRowSpanEnabled } from '../helper/rowSpan';
+import { calculateRange, getCachedRange } from './helper/viewport';
 
-interface ViewPortOption {
+interface ViewportOption {
   data: Data;
   column: Column;
   dimension: Dimension;
   rowCoords: RowCoords;
   columnCoords: ColumnCoords;
   showDummyRows: boolean;
-}
-
-function findIndexByPosition(offsets: number[], position: number) {
-  const rowOffset = findIndex(offset => offset > position, offsets);
-
-  return rowOffset === -1 ? offsets.length - 1 : rowOffset - 1;
-}
-
-function calculateRange(
-  scrollPos: number,
-  totalSize: number,
-  offsets: number[],
-  data: Data,
-  rowCalculation?: boolean
-): Range {
-  // safari uses negative scroll position for bouncing effect
-  scrollPos = Math.max(scrollPos, 0);
-
-  let start = findIndexByPosition(offsets, scrollPos);
-  let end = findIndexByPosition(offsets, scrollPos + totalSize) + 1;
-  const { rawData, sortState, pageOptions, pageRowRange } = data;
-
-  if (rowCalculation && pageOptions.useClient) {
-    [start, end] = pageRowRange;
-  }
-
-  if (rawData.length && rowCalculation && isRowSpanEnabled(sortState)) {
-    const maxRowSpanCount = getMaxRowSpanCount(start, rawData);
-    const topRowSpanIndex = start - maxRowSpanCount;
-
-    return [topRowSpanIndex >= 0 ? topRowSpanIndex : 0, end];
-  }
-
-  return [start, end];
-}
-
-function getCachedRange(cachedRange: Range, newRange: Range) {
-  if (cachedRange && arrayEqual(cachedRange, newRange)) {
-    return cachedRange;
-  }
-  return newRange;
 }
 
 export function create({
@@ -60,7 +18,7 @@ export function create({
   rowCoords,
   columnCoords,
   showDummyRows
-}: ViewPortOption): Observable<Viewport> {
+}: ViewportOption): Observable<Viewport> {
   return observable({
     scrollLeft: 0,
     scrollTop: 0,

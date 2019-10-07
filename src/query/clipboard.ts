@@ -1,5 +1,5 @@
 import { SelectionRange, Store } from '../store/types';
-import { getTextWithCopyOptionsApplied } from '../helper/clipboard';
+import { getTextWithCopyOptionsApplied } from '../store/helper/clipboard';
 
 export function getRangeToPaste(store: Store, pasteData: string[][]): SelectionRange {
   const {

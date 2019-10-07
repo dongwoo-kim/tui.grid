@@ -6,7 +6,7 @@ import { connect } from './hoc';
 import { DispatchProps } from '../dispatch/create';
 import { CellRenderer } from '../renderer/types';
 import { getInstance } from '../instance';
-import { isRowHeader, isRowNumColumn } from '../helper/column';
+import { isRowHeader, isRowNumColumn } from '../store/helper/column';
 import Grid from '../grid';
 import { findIndexByRowKey } from '../query/data';
 import { setCellHeight } from '../helper/cellHeightMap';

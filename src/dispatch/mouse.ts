@@ -1,5 +1,5 @@
 import { findOffsetIndex, findPropIndex, isNull } from '../helper/common';
-import { isRowHeader } from '../helper/column';
+import { isRowHeader } from '../store/helper/column';
 import { changeFocus } from './focus';
 import { changeSelectionRange } from './selection';
 import {

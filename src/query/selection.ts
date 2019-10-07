@@ -1,5 +1,5 @@
 import { findProp, findPropIndex, includes } from '../helper/common';
-import { isParentColumnHeader } from '../helper/column';
+import { isParentColumnHeader } from '../store/helper/column';
 import { ColumnInfo, ComplexColumnInfo } from '../store/types';
 
 function sortByVisibleColumns(visibleColumnsWithRowHeader: ColumnInfo[], childNames: string[]) {

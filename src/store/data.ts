@@ -5,44 +5,44 @@ import {
   Column,
   ColumnInfo,
   ColumnDefaultValues,
-  Formatter,
   CellRenderData,
-  FormatterProps,
-  CellValue,
-  ValidationType,
-  Validation,
-  PageOptions,
   RowKey,
   RowSpanMap,
   ListItem,
   SortState,
   ViewRow,
   Range,
-  Filter
+  Filter,
+  PageOptions
 } from './types';
 import { observable, observe, Observable } from '../helper/observable';
-import { isRowHeader, isRowNumColumn, isCheckboxColumn } from '../helper/column';
+import { isRowHeader, isCheckboxColumn } from '../store/helper/column';
 import { OptRow, RowSpanAttributeValue } from '../types';
 import {
   someProp,
-  encodeHTMLEntity,
   setDefaultProp,
-  isBlank,
   isUndefined,
   isBoolean,
   isEmpty,
-  isString,
   isNumber,
-  isFunction,
-  convertToNumber
+  isFunction
 } from '../helper/common';
-import { listItemText } from '../formatter/listItemText';
 import { createTreeRawData, createTreeCellInfo } from '../helper/tree';
 import { createRowSpan } from '../helper/rowSpan';
 import { cls } from '../helper/dom';
 import { findIndexByRowKey } from '../query/data';
+import {
+  getRowHeaderValue,
+  getValidationCode,
+  getFormattedValue,
+  getEditable,
+  getDisabled,
+  generateDataCreationKey,
+  getListItems,
+  getDataCreationKey
+} from './helper/data';
 
-interface OptData {
+interface DataOption {
   data: OptRow[];
   column: Column;
   pageOptions: PageOptions;
@@ -55,116 +55,6 @@ interface RawRowOptions {
   keyColumnName?: string;
   prevRow?: Row;
   lazyObservable?: boolean;
-}
-
-let dataCreationKey = '';
-export function generateDataCreationKey() {
-  dataCreationKey = `@dataKey${Date.now()}`;
-  return dataCreationKey;
-}
-
-export function getCellDisplayValue(value: CellValue) {
-  if (typeof value === 'undefined' || value === null) {
-    return '';
-  }
-  return String(value);
-}
-
-function getFormattedValue(
-  props: FormatterProps,
-  formatter?: Formatter,
-  defaultValue?: CellValue,
-  relationListItems?: ListItem[]
-) {
-  let value: CellValue;
-
-  if (formatter === 'listItemText') {
-    value = listItemText(props, relationListItems);
-  } else if (typeof formatter === 'function') {
-    value = formatter(props);
-  } else if (typeof formatter === 'string') {
-    value = formatter;
-  } else {
-    value = defaultValue;
-  }
-
-  const strValue = getCellDisplayValue(value);
-
-  if (strValue && props.column.escapeHTML) {
-    return encodeHTMLEntity(strValue);
-  }
-  return strValue;
-}
-
-function getRelationCbResult(fn: any, relationParams: Dictionary<any>) {
-  const result = isFunction(fn) ? fn(relationParams) : null;
-  return isUndefined(result) ? null : result;
-}
-
-function getEditable(fn: any, relationParams: Dictionary<any>): boolean {
-  const result = getRelationCbResult(fn, relationParams);
-  return result === null ? true : result;
-}
-
-function getDisabled(fn: any, relationParams: Dictionary<any>): boolean {
-  const result = getRelationCbResult(fn, relationParams);
-  return result === null ? false : result;
-}
-
-function getListItems(fn: any, relationParams: Dictionary<any>): ListItem[] | null {
-  return getRelationCbResult(fn, relationParams);
-}
-
-function getRowHeaderValue(row: Row, columnName: string) {
-  if (isRowNumColumn(columnName)) {
-    return row._attributes.rowNum;
-  }
-  if (isCheckboxColumn(columnName)) {
-    return row._attributes.checked;
-  }
-  return '';
-}
-
-function getValidationCode(value: CellValue, validation?: Validation): ValidationType[] {
-  const invalidStates: ValidationType[] = [];
-
-  if (!validation) {
-    return invalidStates;
-  }
-
-  const { required, dataType, min, max, regExp, validatorFn } = validation;
-
-  if (required && isBlank(value)) {
-    invalidStates.push('REQUIRED');
-  }
-
-  if (validatorFn && !validatorFn(value)) {
-    invalidStates.push('VALIDATOR_FN');
-  }
-
-  if (dataType === 'string' && !isString(value)) {
-    invalidStates.push('TYPE_STRING');
-  }
-
-  if (regExp && isString(value) && !regExp.test(value)) {
-    invalidStates.push('REGEXP');
-  }
-
-  const numberValue = convertToNumber(value);
-
-  if (dataType === 'number' && !isNumber(numberValue)) {
-    invalidStates.push('TYPE_NUMBER');
-  }
-
-  if (min && isNumber(numberValue) && numberValue < min) {
-    invalidStates.push('MIN');
-  }
-
-  if (max && isNumber(numberValue) && numberValue > max) {
-    invalidStates.push('MAX');
-  }
-
-  return invalidStates;
 }
 
 function createViewCell(
@@ -244,56 +134,7 @@ function createRelationViewCell(
   });
 }
 
-export function createViewRow(
-  row: Row,
-  columnMap: Dictionary<ColumnInfo>,
-  rawData: Row[],
-  treeColumnName?: string,
-  treeIcon?: boolean
-) {
-  const { rowKey, sortKey, rowSpanMap, uniqueKey } = row;
-  const initValueMap: Dictionary<CellRenderData | null> = {};
-
-  Object.keys(columnMap).forEach(name => {
-    initValueMap[name] = null;
-  });
-
-  const valueMap = observable(initValueMap) as Dictionary<CellRenderData>;
-  const __unobserveFns__: Function[] = [];
-
-  Object.keys(columnMap).forEach(name => {
-    const { related, relationMap } = columnMap[name];
-
-    // add condition expression to prevent to call watch function recursively
-    if (!related) {
-      __unobserveFns__.push(
-        observe(() => {
-          valueMap[name] = createViewCell(row, columnMap[name]);
-        })
-      );
-    }
-
-    if (relationMap && Object.keys(relationMap).length) {
-      __unobserveFns__.push(
-        observe(() => {
-          createRelationViewCell(name, row, columnMap, valueMap);
-        })
-      );
-    }
-  });
-
-  return {
-    rowKey,
-    sortKey,
-    uniqueKey,
-    rowSpanMap,
-    valueMap,
-    __unobserveFns__,
-    ...(treeColumnName && { treeInfo: createTreeCellInfo(rawData, row, treeIcon) })
-  };
-}
-
-function getAttributes(row: OptRow, index: number, lazyObservable: boolean) {
+function createAttributes(row: OptRow, index: number, lazyObservable: boolean) {
   const defaultAttr = {
     rowNum: index + 1, // @TODO append, remove 할 때 인덱스 변경 처리 필요
     checked: false,
@@ -369,6 +210,55 @@ function createRowSpanMap(row: OptRow, rowSpan: RowSpanAttributeValue, prevRow?:
   return { ...mainRowSpanMap, ...subRowSpanMap };
 }
 
+export function createViewRow(
+  row: Row,
+  columnMap: Dictionary<ColumnInfo>,
+  rawData: Row[],
+  treeColumnName?: string,
+  treeIcon?: boolean
+) {
+  const { rowKey, sortKey, rowSpanMap, uniqueKey } = row;
+  const initValueMap: Dictionary<CellRenderData | null> = {};
+
+  Object.keys(columnMap).forEach(name => {
+    initValueMap[name] = null;
+  });
+
+  const valueMap = observable(initValueMap) as Dictionary<CellRenderData>;
+  const __unobserveFns__: Function[] = [];
+
+  Object.keys(columnMap).forEach(name => {
+    const { related, relationMap } = columnMap[name];
+
+    // add condition expression to prevent to call watch function recursively
+    if (!related) {
+      __unobserveFns__.push(
+        observe(() => {
+          valueMap[name] = createViewCell(row, columnMap[name]);
+        })
+      );
+    }
+
+    if (relationMap && Object.keys(relationMap).length) {
+      __unobserveFns__.push(
+        observe(() => {
+          createRelationViewCell(name, row, columnMap, valueMap);
+        })
+      );
+    }
+  });
+
+  return {
+    rowKey,
+    sortKey,
+    uniqueKey,
+    rowSpanMap,
+    valueMap,
+    __unobserveFns__,
+    ...(treeColumnName && { treeInfo: createTreeCellInfo(rawData, row, treeIcon) })
+  };
+}
+
 export function createRawRow(
   row: OptRow,
   index: number,
@@ -384,8 +274,8 @@ export function createRawRow(
   }
   row.rowKey = keyColumnName ? row[keyColumnName] : index;
   row.sortKey = isNumber(row.sortKey) ? row.sortKey : index;
-  row.uniqueKey = `${dataCreationKey}-${row.rowKey}`;
-  row._attributes = getAttributes(row, index, lazyObservable);
+  row.uniqueKey = `${getDataCreationKey()}-${row.rowKey}`;
+  row._attributes = createAttributes(row, index, lazyObservable);
   row._attributes.rowSpan = rowSpan;
   (row as Row).rowSpanMap = createRowSpanMap(row, rowSpan, prevRow);
 
@@ -448,7 +338,7 @@ export function create({
   useClientSort,
   disabled,
   id
-}: OptData): Observable<Data> {
+}: DataOption): Observable<Data> {
   const { rawData, viewData } = createData(data, column, true);
 
   const sortState: SortState = {

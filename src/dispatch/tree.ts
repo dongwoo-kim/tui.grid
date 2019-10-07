@@ -1,7 +1,7 @@
 import { OptRow, OptAppendTreeRow } from '../types';
 import { Store, Row, RowKey } from '../store/types';
 import { createViewRow } from '../store/data';
-import { getRowHeight } from '../store/rowCoords';
+import { getRowHeight } from '../store/helper/rowCoords';
 import { isUndefined } from '../helper/common';
 import { notify } from '../helper/observable';
 import { getDataManager } from '../instance';

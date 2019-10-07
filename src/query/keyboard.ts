@@ -1,7 +1,8 @@
 import { CellIndex, Store } from '../store/types';
 import { clamp, isNull } from '../helper/common';
-import { getNextRowIndex, getPrevRowIndex, KeyboardEventCommandType } from '../helper/keyboard';
+import { KeyboardEventCommandType } from '../helper/keyboard';
 import { getRowSpanTopIndex, getRowSpanBottomIndex, isRowSpanEnabled } from '../helper/rowSpan';
+import { getNextRowIndex, getPrevRowIndex } from '../store/helper/keyboard';
 
 export function getNextCellIndex(
   store: Store,

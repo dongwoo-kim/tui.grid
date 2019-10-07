@@ -2,7 +2,7 @@ import { findParentByTagName, getCellAddress, dataAttr } from '../helper/dom';
 import { CellValue, Filter, RowKey, SelectionRange, SortState } from '../store/types';
 import { XHROptions } from '../dataSource/types';
 import { assign, pruneObject } from '../helper/common';
-import { isRowHeader } from '../helper/column';
+import { isRowHeader } from '../store/helper/column';
 import Grid from '../grid';
 
 type TargetType = 'rowHeader' | 'columnHeader' | 'dummy' | 'cell' | 'etc';

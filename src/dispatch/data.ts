@@ -24,11 +24,11 @@ import {
   someProp,
   findPropIndex
 } from '../helper/common';
-import { isColumnEditable } from '../helper/clipboard';
 import { OptRow, OptAppendRow, OptRemoveRow } from '../types';
-import { createRawRow, createViewRow, createData, generateDataCreationKey } from '../store/data';
+import { createRawRow, createViewRow, createData } from '../store/data';
+import { generateDataCreationKey } from '../store/helper/data';
 import { notify, isObservable } from '../helper/observable';
-import { getRowHeight } from '../store/rowCoords';
+import { getRowHeight } from '../store/helper/rowCoords';
 import { changeSelectionRange } from './selection';
 import { getEventBus } from '../event/eventBus';
 import GridEvent from '../event/gridEvent';
@@ -43,7 +43,7 @@ import { getRenderState } from '../helper/renderState';
 import { changeFocus, initFocus } from './focus';
 import { createTreeRawRow } from '../helper/tree';
 import { sort, initSortState } from './sort';
-import { findIndexByRowKey, findRowByRowKey } from '../query/data';
+import { findIndexByRowKey, findRowByRowKey, isEditableCell } from '../query/data';
 import {
   updateSummaryValueByCell,
   updateSummaryValueByColumn,
@@ -51,7 +51,7 @@ import {
   updateAllSummaryValues
 } from './summary';
 import { initFilter, filter } from './filter';
-import { isRowHeader } from '../helper/column';
+import { isRowHeader } from '../store/helper/column';
 import { cls } from '../helper/dom';
 import { setHoveredRowKey } from './renderState';
 import { findRowIndexByPosition } from '../query/mouse';
@@ -246,11 +246,9 @@ function applyPasteDataToRawData(
   pasteData: string[][],
   indexToPaste: SelectionRange
 ) {
-  const {
-    data: { filteredRawData, filteredViewData },
-    column: { visibleColumnsWithRowHeader },
-    id
-  } = store;
+  const { data, column, id } = store;
+  const { filteredRawData, filteredViewData } = data;
+  const { visibleColumnsWithRowHeader } = column;
   const {
     row: [startRowIndex, endRowIndex],
     column: [startColumnIndex, endColumnIndex]
@@ -263,7 +261,7 @@ function applyPasteDataToRawData(
     const rawRowIndex = rowIdx + startRowIndex;
     for (let columnIdx = 0; columnIdx + startColumnIndex <= endColumnIndex; columnIdx += 1) {
       const name = columnNames[columnIdx + startColumnIndex];
-      if (filteredViewData.length && isColumnEditable(filteredViewData, rawRowIndex, name)) {
+      if (filteredViewData.length && isEditableCell(data, column, rawRowIndex, name)) {
         pasted = true;
         filteredRawData[rawRowIndex][name] = pasteData[rowIdx][columnIdx];
       }

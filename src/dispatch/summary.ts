@@ -1,10 +1,7 @@
 import { Store, SummaryColumnContentMap, CellValue, Row } from '../store/types';
-import {
-  castToSummaryColumnContent,
-  createSummaryValue,
-  extractSummaryColumnContent
-} from '../helper/summary';
+import { castToSummaryColumnContent, extractSummaryColumnContent } from '../store/helper/summary';
 import { isEmpty } from '../helper/common';
+import { createSummaryValue } from '../store/summary';
 
 interface Options {
   prevValue?: CellValue;

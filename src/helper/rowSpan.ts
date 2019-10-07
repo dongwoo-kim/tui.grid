@@ -9,7 +9,7 @@ import {
   SortState
 } from '../store/types';
 import { findPropIndex, isEmpty, findProp, isNull } from './common';
-import { getSortedRange } from './selection';
+import { getSortedRange } from '../store/helper/selection';
 
 function getMainRowSpan(columnName: string, rowSpan: RowSpan, data: Row[]) {
   const { mainRow, mainRowKey } = rowSpan;

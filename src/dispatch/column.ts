@@ -1,7 +1,9 @@
 import { Store, Side, ComplexColumnInfo, ViewRow } from '../store/types';
 import { OptColumn } from '../types';
-import { createColumn, getRelationColumns } from '../store/column';
-import { createViewRow, generateDataCreationKey } from '../store/data';
+import { createColumn } from '../store/column';
+import { getRelationColumns } from '../store/helper/column';
+import { createViewRow } from '../store/data';
+import { generateDataCreationKey } from '../store/helper/data';
 import GridEvent from '../event/gridEvent';
 import { getEventBus } from '../event/eventBus';
 import { initFocus } from './focus';

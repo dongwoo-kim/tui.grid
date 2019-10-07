@@ -2,162 +2,53 @@ import {
   Column,
   ColumnInfo,
   Dictionary,
-  Relations,
   ClipboardCopyOptions,
   ComplexColumnInfo,
-  CellEditorOptions,
-  CellRendererOptions,
-  HeaderAlignInfo,
-  ColumnFilterOption
+  HeaderAlignInfo
 } from './types';
 import {
   OptColumn,
   OptColumnOptions,
   OptRowHeader,
   OptTree,
-  OptCellEditor,
-  OptCellRenderer,
   AlignType,
   VAlignType,
-  ColumnsAlignInfo,
-  FilterOpt,
-  FilterOptionType
+  ColumnsAlignInfo
 } from '../types';
 import { observable } from '../helper/observable';
-import { isRowNumColumn } from '../helper/column';
 import {
   createMapFromArray,
   includes,
   omit,
   isString,
-  isFunction,
-  isObject,
   isUndefined,
-  isNumber,
-  findProp
+  isNumber
 } from '../helper/common';
 import { DefaultRenderer } from '../renderer/default';
-import { editorMap } from '../editor/manager';
 import { RowHeaderInputRenderer } from '../renderer/rowHeaderInput';
+import {
+  getEditorOptions,
+  getRendererOptions,
+  getFilterOptions,
+  getHeaderAlignInfo,
+  getRelationMap,
+  getTreeInfo,
+  getRelationColumns,
+  isRowNumColumn
+} from './helper/column';
+import { defMinWidth, ROW_HEADERS_MAP, DEF_ROW_HEADER_INPUT } from '../helper/constant';
 
-const ROW_HEADERS_MAP = {
-  rowNum: '_number',
-  checkbox: '_checked'
-};
-const defMinWidth = {
-  ROW_HEADER: 40,
-  COLUMN: 50
-};
-const DEF_ROW_HEADER_INPUT = '<input type="checkbox" name="_checked" />';
-
-function getBuiltInEditorOptions(editorType: string, options?: Dictionary<any>) {
-  const editInfo = editorMap[editorType];
-
-  return {
-    type: editInfo[0],
-    options: {
-      ...editInfo[1],
-      ...options
-    }
-  };
-}
-
-function getEditorOptions(editor?: OptCellEditor): CellEditorOptions | null {
-  if (isFunction(editor)) {
-    return { type: editor };
-  }
-  if (isString(editor)) {
-    return getBuiltInEditorOptions(editor);
-  }
-  if (isObject(editor)) {
-    return isString(editor.type)
-      ? getBuiltInEditorOptions(editor.type, editor.options)
-      : (editor as CellEditorOptions);
-  }
-  return null;
-}
-
-export function getFilterOptions(filter: FilterOptionType | FilterOpt): ColumnFilterOption {
-  const defaultOption = {
-    type: isObject(filter) ? filter.type : filter!,
-    showApplyBtn: false,
-    showClearBtn: false
-  };
-
-  if (isString(filter)) {
-    if (filter === 'select') {
-      return {
-        ...defaultOption,
-        operator: 'OR'
-      };
-    }
-  }
-
-  if (isObject(filter)) {
-    return {
-      ...defaultOption,
-      ...filter
-    };
-  }
-
-  return defaultOption;
-}
-
-function getRendererOptions(renderer?: OptCellRenderer): CellRendererOptions {
-  if (isObject(renderer) && !isFunction(renderer) && isFunction(renderer.type)) {
-    return renderer as CellRendererOptions;
-  }
-  return { type: DefaultRenderer };
-}
-
-function getTreeInfo(treeColumnOptions: OptTree, name: string) {
-  if (treeColumnOptions && treeColumnOptions.name === name) {
-    const { useIcon = true } = treeColumnOptions;
-
-    return { tree: { useIcon } };
-  }
-
-  return null;
-}
-
-function getRelationMap(relations: Relations[]) {
-  const relationMap: Dictionary<Relations> = {};
-  relations.forEach(relation => {
-    const { editable, disabled, listItems, targetNames = [] } = relation;
-    targetNames.forEach(targetName => {
-      relationMap[targetName] = {
-        editable,
-        disabled,
-        listItems
-      };
-    });
-  });
-
-  return relationMap;
-}
-
-export function getRelationColumns(relations: Relations[]) {
-  const relationColumns: string[] = [];
-  relations.forEach(relation => {
-    const { targetNames = [] } = relation;
-    targetNames.forEach(targetName => {
-      relationColumns.push(targetName);
-    });
-  });
-
-  return relationColumns;
-}
-
-function getHeaderAlignInfo(name: string, alignInfo: HeaderAlignInfo) {
-  const { columnsAlign, align: defaultAlign, valign: defaultVAlign } = alignInfo;
-  const columnOption = findProp('name', name, columnsAlign);
-  const headerAlign = columnOption && columnOption.align ? columnOption.align : defaultAlign;
-  const headerVAlign = columnOption && columnOption.valign ? columnOption.valign : defaultVAlign;
-
-  return {
-    headerAlign,
-    headerVAlign
-  };
+interface ColumnOptions {
+  columns: OptColumn[];
+  columnOptions: OptColumnOptions;
+  rowHeaders: OptRowHeader[];
+  copyOptions: ClipboardCopyOptions;
+  keyColumnName?: string;
+  treeColumnOptions: OptTree;
+  complexColumns: ComplexColumnInfo[];
+  align: AlignType;
+  valign: VAlignType;
+  columnsAlign: ColumnsAlignInfo[];
 }
 
 // eslint-disable-next-line max-params
@@ -280,19 +171,6 @@ function createComplexHeaderColumns(column: ComplexColumnInfo, alignInfo: Header
     headerAlign,
     headerVAlign
   });
-}
-
-interface ColumnOptions {
-  columns: OptColumn[];
-  columnOptions: OptColumnOptions;
-  rowHeaders: OptRowHeader[];
-  copyOptions: ClipboardCopyOptions;
-  keyColumnName?: string;
-  treeColumnOptions: OptTree;
-  complexColumns: ComplexColumnInfo[];
-  align: AlignType;
-  valign: VAlignType;
-  columnsAlign: ColumnsAlignInfo[];
 }
 
 export function create({

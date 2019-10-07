@@ -8,76 +8,24 @@ import {
   Selection,
   SelectionRange,
   SelectionType,
-  SelectionUnit,
-  Side
+  SelectionUnit
 } from './types';
 import { Observable, observable } from '../helper/observable';
-import { getSortedRange } from '../helper/selection';
 import { isEmpty } from '../helper/common';
+import {
+  getOwnSideColumnRange,
+  getVerticalStyles,
+  getHorizontalStyles,
+  getSortedRange
+} from './helper/selection';
 
-type ColumnWidths = { [key in Side]: number[] };
-
-interface SelectionOptions {
+interface SelectionOption {
   selectionUnit: SelectionUnit;
   columnCoords: ColumnCoords;
   column: Column;
   dimension: Dimension;
   rowCoords: RowCoords;
   data: Data;
-}
-
-function getOwnSideColumnRange(
-  columnRange: Range,
-  side: Side,
-  visibleFrozenCount: number
-): Range | null {
-  const [start, end] = columnRange.map(columnIdx => columnIdx);
-
-  if (side === 'L' && start < visibleFrozenCount) {
-    return [start, Math.min(end, visibleFrozenCount - 1)];
-  }
-
-  if (side === 'R' && end >= visibleFrozenCount) {
-    return [Math.max(start, visibleFrozenCount) - visibleFrozenCount, end - visibleFrozenCount];
-  }
-
-  return null;
-}
-
-function getVerticalStyles(rowRange: Range, rowOffsets: number[], rowHeights: number[]) {
-  const top = rowOffsets[rowRange[0]];
-  const bottom = rowOffsets[rowRange[1]] + rowHeights[rowRange[1]];
-
-  return { top, height: bottom - top };
-}
-
-function getHorizontalStyles(
-  columnRange: Range | null,
-  columnWidths: ColumnWidths,
-  side: Side,
-  cellBorderWidth: number
-) {
-  let left = 0;
-  let width = 0;
-  if (!columnRange) {
-    return { left, width };
-  }
-
-  const widths = columnWidths[side];
-  const startIndex = columnRange[0];
-  const endIndex = Math.min(columnRange[1], widths.length - 1);
-
-  for (let i = 0; i <= endIndex; i += 1) {
-    if (i < startIndex) {
-      left += widths[i] + cellBorderWidth;
-    } else {
-      width += widths[i] + cellBorderWidth;
-    }
-  }
-
-  width -= cellBorderWidth;
-
-  return { left, width };
 }
 
 export function create({
@@ -87,12 +35,13 @@ export function create({
   column: columnInfo,
   dimension,
   data
-}: SelectionOptions): Observable<Selection> {
+}: SelectionOption): Observable<Selection> {
   return observable({
     inputRange: null,
     unit: selectionUnit,
     type: 'cell' as SelectionType,
     intervalIdForAutoScroll: null,
+
     get range(this: Selection) {
       if (!this.inputRange) {
         return null;

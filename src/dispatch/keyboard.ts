@@ -3,10 +3,10 @@ import { KeyboardEventCommandType, TabCommandType } from '../helper/keyboard';
 import { getNextCellIndex, getRemoveRange } from '../query/keyboard';
 import { changeFocus } from './focus';
 import { changeSelectionRange } from './selection';
-import { isRowHeader } from '../helper/column';
+import { isRowHeader } from '../store/helper/column';
 import { getRowRangeWithRowSpan, isRowSpanEnabled } from '../helper/rowSpan';
-import { getSortedRange } from '../helper/selection';
-import { isCellEditable } from '../query/data';
+import { getSortedRange } from '../store/helper/selection';
+import { isEditableCell, findIndexByRowKey } from '../query/data';
 
 function getNextCellIndexWithRowSpan(
   store: Store,
@@ -55,14 +55,16 @@ export function moveFocus(store: Store, command: KeyboardEventCommandType) {
 }
 
 export function editFocus(store: Store, command: KeyboardEventCommandType) {
-  const { focus, data, column } = store;
+  const { focus, data, column, id } = store;
   const { rowKey, columnName } = focus;
 
   if (rowKey === null || columnName === null) {
     return;
   }
 
-  if (command === 'currentCell' && isCellEditable(data, column, rowKey, columnName)) {
+  const foundIndex = findIndexByRowKey(data, column, id, rowKey);
+
+  if (command === 'currentCell' && isEditableCell(data, column, foundIndex, columnName)) {
     focus.navigating = false;
     focus.editingAddress = { rowKey, columnName };
   } else if (command === 'nextCell' || command === 'prevCell') {
@@ -90,7 +92,7 @@ export function moveTabFocus(store: Store, command: TabCommandType) {
 
     if (
       focus.tabMode === 'moveAndEdit' &&
-      isCellEditable(data, column, nextRowKey, nextColumnName)
+      isEditableCell(data, column, nextRowIndex, nextColumnName)
     ) {
       setTimeout(() => {
         focus.navigating = false;

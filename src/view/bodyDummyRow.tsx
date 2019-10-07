@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { connect } from './hoc';
 import { cls, dataAttr } from '../helper/dom';
-import { isRowHeader } from '../helper/column';
+import { isRowHeader } from '../store/helper/column';
 
 interface OwnProps {
   columnNames: string[];

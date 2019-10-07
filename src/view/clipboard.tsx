@@ -1,16 +1,16 @@
 import { h, Component } from 'preact';
 import { connect } from './hoc';
 import { DispatchProps } from '../dispatch/create';
-import { cls } from '../helper/dom';
-import { KeyboardEventCommandType, KeyboardEventType, keyEventGenerate } from '../helper/keyboard';
-import { isEdge, isMobile } from '../helper/browser';
 import {
+  cls,
   convertTableToData,
-  convertTextToData,
   isSupportWindowClipboardData,
   setClipboardSelection
-} from '../helper/clipboard';
+} from '../helper/dom';
+import { KeyboardEventCommandType, KeyboardEventType, keyEventGenerate } from '../helper/keyboard';
+import { isEdge, isMobile } from '../helper/browser';
 import { getText } from '../query/clipboard';
+import { convertTextToData } from '../helper/common';
 
 interface StoreProps {
   navigating: boolean;

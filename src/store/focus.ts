@@ -47,11 +47,9 @@ export function create({
     get columnIndex(this: Focus) {
       const { columnName, side } = this;
 
-      if (columnName === null || side === null) {
-        return null;
-      }
-
-      return findPropIndex('name', columnName, column.visibleColumnsBySideWithRowHeader[side]);
+      return columnName === null || side === null
+        ? null
+        : findPropIndex('name', columnName, column.visibleColumnsBySideWithRowHeader[side]);
     },
 
     get totalColumnIndex(this: Focus) {
@@ -68,10 +66,7 @@ export function create({
     get rowIndex(this: Focus) {
       const { rowKey } = this;
 
-      if (rowKey === null) {
-        return null;
-      }
-      return findIndexByRowKey(data, column, id, rowKey);
+      return rowKey === null ? null : findIndexByRowKey(data, column, id, rowKey);
     },
 
     get originalRowIndex(this: Focus) {

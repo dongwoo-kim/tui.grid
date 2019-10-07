@@ -1,15 +1,8 @@
 import { Store, RowKey, Data, Row, Dictionary, Column } from '../store/types';
-import {
-  findProp,
-  isFunction,
-  findPropIndex,
-  isNull,
-  isUndefined,
-  isEmpty
-} from '../helper/common';
+import { isFunction, findPropIndex, isNull, isUndefined, isEmpty } from '../helper/common';
 import { getDataManager } from '../instance';
 import { isRowSpanEnabled } from '../helper/rowSpan';
-import { isHiddenColumn } from '../helper/column';
+import { isHiddenColumn } from '../store/helper/column';
 
 export function getCellAddressByIndex(
   { data, column }: Store,
@@ -22,22 +15,10 @@ export function getCellAddressByIndex(
   };
 }
 
-export function isCellDisabled(data: Data, rowKey: RowKey, columnName: string) {
-  const { viewData, disabled } = data;
-  const row = findProp('rowKey', rowKey, viewData)!;
-  const rowDisabled = row.valueMap[columnName].disabled;
-
-  return disabled || rowDisabled;
-}
-
-export function isCellEditable(data: Data, column: Column, rowKey: RowKey, columnName: string) {
-  const { viewData } = data;
-  const row = findProp('rowKey', rowKey, viewData)!;
-  const { editable } = row.valueMap[columnName];
-
-  return (
-    !isHiddenColumn(column, columnName) && !isCellDisabled(data, rowKey, columnName) && editable
-  );
+export function isEditableCell(data: Data, column: Column, rowIndex: number, columnName: string) {
+  const { disabled, filteredViewData } = data;
+  const { disabled: rowDisabled, editable } = filteredViewData[rowIndex].valueMap[columnName];
+  return !isHiddenColumn(column, columnName) && editable && !disabled && !rowDisabled;
 }
 
 export function getCheckedRows({ data }: Store) {

@@ -33,7 +33,7 @@ import { register, registerDataSources } from './instance';
 import i18n from './i18n';
 import { getText } from './query/clipboard';
 import { getInvalidRows } from './query/validation';
-import { isSupportWindowClipboardData, setClipboardSelection } from './helper/clipboard';
+import { isSupportWindowClipboardData, setClipboardSelection, cls, dataAttr } from './helper/dom';
 import { findPropIndex, isUndefined, mapProp, hasOwnProp } from './helper/common';
 import { Observable, getOriginObject } from './helper/observable';
 import { createEventBus, EventBus } from './event/eventBus';
@@ -45,7 +45,7 @@ import {
   findRowByRowKey,
   getFilterStateWithOperator
 } from './query/data';
-import { isRowHeader } from './helper/column';
+import { isRowHeader } from './store/helper/column';
 import { createProvider } from './dataSource/serverSideDataProvider';
 import { createManager } from './dataSource/modifiedDataManager';
 import { getConfirmMessage } from './dataSource/helper/message';
@@ -60,7 +60,6 @@ import {
 } from './dataSource/types';
 import { getParentRow, getChildRows, getAncestorRows, getDescendantRows } from './query/tree';
 import { getDepth } from './helper/tree';
-import { cls, dataAttr } from './helper/dom';
 import { getRowSpanByRowKey } from './helper/rowSpan';
 import { sendHostname } from './helper/googleAnalytics';
 import { composeConditionFn, getFilterConditionFn } from './helper/filter';

@@ -17,6 +17,10 @@ export function startEditing(store: Store, rowKey: RowKey, columnName: string) {
   const { filteredRawData } = data;
   const foundIndex = findIndexByRowKey(data, column, id, rowKey);
 
+  if (foundIndex === -1) {
+    return;
+  }
+
   // makes the data observable to judge editable, disable of the cell;
   makeObservable(store, rowKey);
 
@@ -151,7 +155,7 @@ export function saveAndFinishEditing(
   const { data, column, focus, id } = store;
   const foundIndex = findIndexByRowKey(data, column, id, rowKey);
 
-  if (!isEditingCell(focus, rowKey, columnName)) {
+  if (!isEditingCell(focus, rowKey, columnName) || foundIndex === -1) {
     return;
   }
   // makes the data observable to judge editable, disable of the cell;
@@ -178,8 +182,7 @@ function makeObservable(store: Store, rowKey: RowKey) {
   const { data, column, id } = store;
   const { rawData, viewData } = data;
   const { allColumnMap, treeColumnName, treeIcon } = column;
-  // @TODO: rawData 기준으로 index 찾기
-  const foundIndex = findIndexByRowKey(data, column, id, rowKey);
+  const foundIndex = findIndexByRowKey(data, column, id, rowKey, false);
   const rawRow = rawData[foundIndex];
 
   if (isObservable(rawRow)) {

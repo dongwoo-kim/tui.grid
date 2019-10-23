@@ -1,5 +1,9 @@
 import { cls, dataAttr } from '@/helper/dom';
 
+Cypress.Commands.add('getByCls', (...names) => {
+  return cy.get(names.map(name => `.${cls(name)}`).join(' '));
+});
+
 Cypress.Commands.add('getCell', (rowKey, columnName) => {
   return cy.get(
     `.${cls('cell')}[${dataAttr.ROW_KEY}="${rowKey}"][${dataAttr.COLUMN_NAME}="${columnName}"]`
@@ -13,6 +17,21 @@ Cypress.Commands.add('getCellByIdx', (rowIdx, columnIdx) => {
     .eq(columnIdx);
 });
 
+Cypress.Commands.add('getCellData', () => {
+  return cy
+    .getByTestId('rside-body')
+    .find('tr')
+    .then($rows =>
+      $rows
+        .get()
+        .map(row => [...row.querySelectorAll(`.${cls('cell')}`)].map(cell => cell.textContent))
+    );
+});
+
+Cypress.Commands.add('getByTestId', testId => {
+  return cy.get(`[data-testid="${testId}"]`);
+});
+
 Cypress.Commands.add('getCellContent', (rowKey, columnName) => {
   return cy.getCell(rowKey, columnName).find(`> .${cls('cell-content')}`);
 });
@@ -21,7 +40,7 @@ Cypress.Commands.add('createGrid', (gridOptions, containerStyle = {}) => {
   return cy.window().then(win => {
     const { document, tui } = win;
     const el = document.createElement('div');
-    const styles = { width: '800px', ...containerStyle };
+    const styles = { width: '600px', ...containerStyle };
 
     Object.assign(el.style, styles);
     document.body.appendChild(el);

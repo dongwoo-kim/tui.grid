@@ -11,6 +11,12 @@ declare namespace Cypress {
 
     getCell(rowKey: number | string, column: string): Chainable<any>;
 
+    getCellData(): Chainable<any>;
+
+    getByCls(...classNames: string[]): Chainable<any>;
+
+    getByTestId(id: string): Chainable<any>;
+
     getCellByIdx(rowIdx: number, columnIdx: number): Chainable<any>;
 
     getCellContent(rowKey: number | string, column: string): Chainable<any>;

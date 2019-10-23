@@ -168,6 +168,7 @@ class BodyAreaComp extends Component<Props> {
     };
     return (
       <div
+        data-testid={`${side.toLocaleLowerCase()}side-body`}
         class={cls('body-area')}
         style={areaStyle}
         onScroll={this.handleScroll}

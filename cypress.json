@@ -3,5 +3,6 @@
   "viewportWidth": 800,
   "viewportHeight": 600,
   "baseUrl": "http://localhost:8000",
+  "integrationFolder": "cypress/functional",
   "watchExtraFiles": ["dist"]
 }

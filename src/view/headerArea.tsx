@@ -98,6 +98,7 @@ class HeaderAreaComp extends Component<Props> {
 
     return (
       <div
+        data-testid={`${side.toLowerCase()}side-header`}
         class={cls('header-area')}
         style={headerHeightStyle}
         ref={el => {
